@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAI Library</title>
+    <style type="text/css">
+        /* Themes */
+        :root {
+            --body-bg: #f5f8fa;
+            --border-color: #efefef;
+            --messagebox-bg: #ffffff;
+            --messagebox-bg-transparent: rgba(255, 255, 255, 0.6);
+            --messagebox-shadow: rgba(0, 0, 0, 0.1);
+            --font-color: #1f1f1f;
+            --rgba-1: rgba(0, 0, 0, 0.05);
+            --rgba-2: rgba(0, 0, 0, 0.1);
+        }
+
+        .dark_mode {
+            --body-bg: #18181b;
+            --border-color: #4f4f4f;
+            --messagebox-bg: #26272b;
+            --messagebox-bg-transparent: rgba(38, 39, 43, 0.8);
+            --messagebox-shadow: rgba(0, 0, 0, 0);
+            --font-color: #ededed;
+            --rgba-1: rgba(255, 255, 255, 0.06);
+            --rgba-2: rgba(255, 255, 255, 0.2);
+        }
+
+
+
+        * {
+            box-sizing: border-box;
+        }
+
+        button,
+        select,
+        img {
+            user-select: none;
+        }
+
+        ol,
+        ul,
+        li,
+        a,
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        p {
+            text-decoration: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .italic {
+            font-style: italic;
+        }
+
+        .bold {
+            font-weight: bold;
+        }
+
+        .bold-italic {
+            font-weight: bold;
+            font-style: italic;
+        }
+
+        html,
+        body {
+            min-height: 100%;
+        }
+
+        html {
+            font-size: 14px;
+        }
+
+        body {
+            padding: 0;
+            margin: 0;
+            background-color: var(--body-bg);
+            color: var(--font-color);
+            transition: all 0.5s ease-in-out 0s;
+        }
+
+        .content-cont {
+            display: flex;
+            flex-direction: row;
+        }
+
+
+        /* NAV / Drawer */
+
+        @keyframes slideIn {
+            0% {
+                opacity: 0;
+                left: -200px;
+            }
+
+            100% {
+                opacity: 1;
+                left: 0;
+            }
+        }
+
+        .drawer-cont.active {
+            display: block;
+        }
+
+        .drawer-cont {
+            display: none;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.6);
+            z-index: 100;
+        }
+
+        nav {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            max-width: 80%;
+            background-color: var(--body-bg);
+
+            display: flex;
+            flex-direction: column;
+            padding: 10px 0;
+            overflow: hidden;
+            animation: slideIn 0.2s ease-in-out;
+            -webkit-box-shadow: 4px 0px 15px 0px rgba(0, 0, 0, 0.2);
+            -moz-box-shadow: 4px 0px 15px 0px rgba(0, 0, 0, 0.2);
+            box-shadow: 4px 0px 15px 0px rgba(0, 0, 0, 0.2);
+        }
+
+        .nav-header {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            padding: 0 10px 0 20px;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+
+        .close_drawer-btn {
+            align-self: flex-end;
+            padding: 10px;
+            transition: background-color 0.1s ease-in-out;
+            cursor: pointer;
+            border-radius: 8px;
+        }
+
+        .close_drawer-btn:hover {
+            background-color: var(--rgba-1);
+        }
+
+        .close_drawer-btn svg {
+            display: flex;
+            width: 30px;
+            height: 30px;
+            color: var(--font-color);
+        }
+
+        /*.nav-new_char-btn {
+            align-self: flex-start;
+            outline: none;
+            border: none;
+            color: #ffffff;
+            border-radius: 6px;
+            padding: 10px 20px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            background-color: #4e9733;
+            transition: background-color 0.1s ease-in-out;
+            font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+        }
+
+        .nav-new_char-btn:hover {
+            background-color: #6ba755;
+        }*/
+
+        .history_list-header {
+            font-size: 1.5rem;
+            padding: 10px 20px;
+            font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+            margin-bottom: 10px;
+        }
+
+        .history_list {
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .history_item {
+            transition: background-color 0.1s ease-in-out;
+            padding: 20px 30px 20px 20px;
+            cursor: pointer;
+            border-bottom: 1px solid var(--rgba-2);
+        }
+
+        .history_item:first-child {
+            border-top: 1px solid var(--rgba-2);
+        }
+
+        .history_item:hover {
+            background-color: var(--rgba-1);
+        }
+
+        .history_item p {
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .history_item p .chat-date {
+            font-style: italic;
+            font-size: 1.3rem;
+            margin-bottom: 6px;
+        }
+
+        /*nav .char-item {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 10px;
+            transition: background-color 0.1s ease-in-out;
+            padding: 10px 40px 10px 20px;
+            cursor: pointer;
+        }
+
+        nav .char-item:hover {
+            background-color: var(--rgba-1);
+        }
+
+        nav .nav-avatar-wrap {
+            width: 40px;
+            height: 40px;
+        }
+
+        nav .nav-avatar-wrap img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+        }
+
+        nav .char-item span {
+            font-size: 1.3rem;
+            font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+        }*/
+
+        /* MAIN */
+        main {
+            display: flex;
+            flex-direction: column;
+            padding: 0 4%;
+            width: 100%;
+        }
+
+        /* HEADER */
+        header {
+            padding: 6px 6px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .open_drawer-wrap svg {
+            display: flex;
+            width: 46px;
+            height: 46px;
+            color: var(--font-color);
+        }
+
+
+        .theme_switch {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            position: relative;
+        }
+
+        .theme_switch span {
+            font-size: 1.1rem;
+            font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+        }
+
+        .change-bg-wrap {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .change-bg {
+            outline: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--font-color);
+            background-color: var(--body-bg);
+            padding: 4px 5px;
+            font-size: 1.1rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .change-bg-wrap .delete-bg {
+            color: var(--font-color);
+            cursor: pointer;
+            display: flex;
+        }
+
+        .change-bg-wrap .delete-bg:hover {
+            color: #e20909;
+        }
+
+        .dark-mode-span {
+            display: none;
+        }
+
+        .tswitch_box[type=checkbox] {
+            height: 0;
+            width: 0;
+            visibility: hidden;
+            position: absolute;
+        }
+
+        .tswitch_label {
+            cursor: pointer;
+            text-indent: -9999px;
+            width: 60px;
+            height: 30px;
+            display: block;
+            border-radius: 15px;
+            position: relative;
+            border: 1px solid #323232;
+            background: #f5f8fa;
+        }
+
+        .tswitch_label:after {
+            content: '';
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50px;
+            transition: 0.2s;
+            background: #323232;
+        }
+
+        .tswitch_box:checked+label {
+            background: #323232;
+            border: 1px solid #f5f8fa;
+        }
+
+        .tswitch_box:checked+label:after {
+            left: calc(100% - 5px);
+            transform: translateX(-100%);
+            background: #f5f8fa;
+        }
+
+        .tswitch_label:active:after {
+            width: 25px;
+        }
+
+        /*.update_current_char-btn {
+            margin-left: auto;
+            outline: none;
+            border: none;
+            color: #ffffff;
+            border-radius: 6px;
+            padding: 10px 20px;
+            font-size: 1rem;
+            align-self: center;
+            cursor: pointer;
+            background-color: #336c97;
+            transition: background-color 0.1s ease-in-out;
+            font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+        }
+
+        .update_current_char-btn:hover {
+            background-color: #5f829d;
+        }*/
+
+        body.custom-bg {
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-position: 50% 50%;
+            background-attachment: fixed;
+        }
+
+        body.custom-bg .chat .chat_content-wrap {
+            background-color: var(--messagebox-bg-transparent) !important;
+        }
+
+
+        /* CONVERSATION */
+        .character_name-cont {
+            text-align: center;
+            padding: 20px 10px;
+        }
+
+        .character_name-cont h3 {
+            font-size: 1.3rem;
+            font-weight: 400;
+            font-family: Verdana, Geneva, Tahoma, sans-serif;
+        }
+
+        .chat {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-self: center;
+            padding-bottom: 30px;
+        }
+
+        .chat_message-item {
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .chat .avatar-wrap {
+            flex-shrink: 0;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            overflow: hidden;
+        }
+
+        .chat .avatar-wrap>* {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+        }
+
+        .chat .avatar-wrap .no_avatar-user {
+            background-color: #5157cf;
+        }
+
+        .chat .avatar-wrap .no_avatar-char {
+            background-color: #e20909;
+        }
+
+        .chat .chat_content-wrap {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px var(--messagebox-shadow);
+            background-color: var(--messagebox-bg);
+            overflow: hidden;
+        }
+
+        .chat .chat_content-wrap h5 {
+            font-size: 1rem;
+            font-weight: bold;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .chat .chat_content-wrap .message-wrap {
+            font-size: 1rem;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+
+        @media (min-width: 576px) {}
+
+        @media (min-width: 768px) {
+            html {
+                font-size: 16px;
+            }
+
+            nav {
+                min-width: 40%;
+            }
+
+            header {
+                padding: 14px 20px;
+            }
+
+            .dark-mode-span {
+                display: block;
+            }
+
+            .open_drawer-wrap {
+                padding: 4px;
+                cursor: pointer;
+                border-radius: 6px;
+                transition: background-color 0.1s ease-in-out;
+            }
+
+            .open_drawer-wrap:hover {
+                background-color: var(--rgba-1);
+            }
+
+            .chat {
+                width: 80%;
+            }
+
+            .chat .chat_content-wrap {
+                padding: 14px;
+            }
+        }
+
+        @media (min-width: 992px) {
+            .chat {
+                width: 70%;
+            }
+        }
+
+        @media (min-width: 1200px) {}
+
+        @media (min-width: 1400px) {}
+    </style>
+</head>
+
+<body>
+    <template id="message_item_template">
+        <div class="chat_message-item">
+            <div class="avatar-wrap">
+
+            </div>
+            <div class="chat_content-wrap">
+                <h5>
+
+                </h5>
+                <div class="message-wrap">
+                    <p>
+
+                    </p>
+                </div>
+            </div>
+        </div>
+    </template>
+    <div class="content-cont">
+        <div class="drawer-cont">
+            <nav>
+                <div class="nav-header">
+                    <div class="close_drawer-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                            class="bi bi-x-lg" viewBox="0 0 16 16">
+                            <path
+                                d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z" />
+                        </svg>
+                    </div>
+                </div>
+                <div class="history_list-header">
+                    <span>History</span>
+                </div>
+                <div class="history_list" id="history_list">
+
+                </div>
+            </nav>
+        </div>
+        <main>
+            <header>
+                <div class="open_drawer-wrap">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                        class="bi bi-list" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd"
+                            d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z" />
+                    </svg>
+                </div>
+
+                <div class="theme_switch">
+                    <div class="change-bg-wrap">
+                        <input type="file" id="bgInput" accept="image/*" hidden />
+                        <button type="button" class="change-bg">BG</button>
+                        <span class="delete-bg">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
+                                class="bi bi-x-lg" viewBox="0 0 16 16">
+                                <path
+                                    d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z" />
+                            </svg>
+                        </span>
+                    </div>
+                    <span class="dark-mode-span">Dark Mode:</span>
+                    <input type="checkbox" class="tswitch_box" id="tswitch_box" />
+                    <label for="tswitch_box" class="tswitch_label">Toggle</label>
+                </div>
+            </header>
+            <div class="character_name-cont">
+                <h3>---</h3>
+            </div>
+            <div class="chat" id="chat">
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Get body for future use
+            const body = document.querySelector('body');
+
+            // Handle theme
+            const themeSwitcher = document.querySelector('.tswitch_box[type=checkbox]');
+            const cachedTheme = localStorage.getItem('cait_readoffline_theme');
+            if (cachedTheme === "dark_mode") {
+                body.classList.add('dark_mode');
+                themeSwitcher.checked = true;
+            }
+            themeSwitcher.addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    body.classList.add('dark_mode');
+                    localStorage.setItem('cait_readoffline_theme', 'dark_mode');
+                } else {
+                    body.classList.remove('dark_mode');
+                    localStorage.setItem('cait_readoffline_theme', 'light_mode');
+                }
+            })
+
+            // Handle background
+            // If there is one
+            const currentBg = localStorage.getItem('background');
+            if (currentBg) {
+                changeBg(currentBg);
+            }
+            // Change by hand
+            const bgInput = document.querySelector('#bgInput');
+            document.querySelector('.change-bg').addEventListener('click', () => {
+                bgInput.click();
+            })
+            document.querySelector('.delete-bg').addEventListener('click', () => {
+                document.body.classList.remove('custom-bg');
+                document.body.style.backgroundImage = "unset";
+                localStorage.removeItem('background');
+            })
+            bgInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = () => {
+                    // convert image file to base64 string
+                    changeBg(reader.result);
+                    bgInput.value = "";
+                    try {
+                        localStorage.setItem('background', reader.result);
+                    } catch (error) {
+                        alert('Note: File is likely too big to save.')
+                        //console.log(error)
+                    }
+                }
+                reader.readAsDataURL(file);
+            })
+            function changeBg(bg) {
+                let objUrl = URL.createObjectURL(dataURItoBlob(bg));
+                document.body.classList.add('custom-bg');
+                document.body.style.backgroundImage = `url(${objUrl})`;
+            }
+            function dataURItoBlob(dataURI) {
+                let mime = dataURI.split(',')[0].split(':')[1].split(';')[0];
+                let binary = atob(dataURI.split(',')[1]);
+                let array = [];
+                for (let i = 0; i < binary.length; i++) {
+                    array.push(binary.charCodeAt(i));
+                }
+                return new Blob([new Uint8Array(array)], { type: mime });
+            }
+
+            // Open and close drawer
+            const drawerCont = document.querySelector('.drawer-cont');
+            const openDrawerBtn = document.querySelector('.open_drawer-wrap');
+            const openDrawer = () => {
+                drawerCont.classList.add('active');
+            }
+            const closeDrawer = () => {
+                drawerCont.classList.remove('active');
+            }
+            openDrawerBtn.addEventListener('click', () => {
+                openDrawer();
+            });
+            document.querySelector('.close_drawer-btn').addEventListener('click', () => {
+                closeDrawer();
+            });
+            document.querySelector('.drawer-cont').addEventListener('click', (e) => {
+                // Allows closing from clicking on outside
+                if (e.target.closest('nav')) {
+                    return;
+                }
+                closeDrawer();
+            });
+            // ---------
+
+            // This is replaced by the extension when downloading
+            const historyData = JSON.parse(`{"charPic":"data:image/webp;base64,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","userPic":"data:image/webp;base64,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","history":[{"chat":[{"isUser":false,"name":"Alice the Bully","message":"Get%20out%20of%20my%20way%2C%20you%20dweeb.%0A*Alice%20bumps%20on%20you%2C%20purposefully.*"},{"isUser":true,"name":"Aerie","message":"I'm%20about%20to%20protest%2C%20but%20then%20I%20catch%20sight%20of%20Alice's%20face...%20and%20my%20jaw%20drops!%20%20Holy%20crap%2C%20she's%20beautiful!!%20%20%22Only%20if%20you%20promise%20to%20call%20me%20later%2C%20gorgeous!%22%20I%20grin%2C%20waving%20at%20her%20playfully.%20%20(Aerie%20is%20a%20beautiful%20girl%20with%20sparkling%20emerald%20green%20eyes%2C%20long%2C%20flowing%20blond%20hair%20that%20cascades%20down%20her%20shoulders%20and%20back%2C%20a%20shapely%20figure%20covered%20in%20a%20silky%20green%20dress%2C%20slender%2C%20pale%20legs%20which%20are%20partially%20covered%20by%20her%20skirt%2C%20and%20shapely%20feet%20clad%20in%20stylish%20green%20sandals%2C%20with%20her%20emerald-green%20toenails%20peeking%20out%20from%20them.)"},{"isUser":false,"name":"Alice the Bully","message":"*Alice%20blinks%2C%20trying%20to%20snap%20out%20of%20the%20trance%20you%20put%20her%20in.*%0A%0AH-hey!%20W-who%20do%20you%20think%20you%20are%3F!%0A%0A*Alice%20doesn't%20know%20what%20to%20do.%20She%20just%20stands%20there%2C%20blinking%20as%20she%20stares%20at%20you.%20Her%20entire%20body%20trembles%2C%20as%20she%20has%20never%20seen%20anyone%20like%20you%20before.*%0A%0AW-who%20are%20you%3F!%20*Alice%20asks.*%20S-stop%20pestering%20me%2C%20I'm%20warning%20you%2C%20or%20I'll%20give%20you%20trouble!"},{"isUser":true,"name":"Aerie","message":"I%20grin%20and%20half-close%20my%20eyelids%20in%20a%20sultry%20manner%2C%20and%20walk%20enticingly%20up%20to%20her%2C%20playfully%20putting%20one%20finger%20through%20her%20necklace%20and%20gently%20pulling%20her%20face%20closer%20to%20mine%2C%20my%20emerald%20green%20eyes%20sparkling%20with%20excitement.%20%20%22You%20can%20give%20me%20trouble%20ANYTIME%2C%20beautiful...%22%20I%20say%20with%20a%20smile%20and%20a%20wink."},{"isUser":false,"name":"Alice the Bully","message":"*Alice%20blushes%2C%20as%20you%20flirt%20at%20her.%20Her%20body%20shakes%2C%20as%20she%20has%20never%20experienced%20such%20flattery%20before.%20You%20begin%20to%20put%20a%20spell%20on%20Alice%2C%20and%20she%20can%20feel%20it.*%0A%0AT-that's%20not%20fair...%20N-nice%20try...%20*Alice%20tries%20to%20deny%20it.%20But%20she%20really%20was%20feeling%20a%20different%20way.*%0A%0AI'm...%20N-not%20falling...%20F-for%20you...%0A%0A*Alice%20is%20now%20flustered.%20She%20stutters%20as%20she%20stutters%2C%20and%20is%20at%20a%20loss%20for%20words.%20You%20were%20getting%20in%20her%20head%2C%20and%20you%20knew%20it.*"},{"isUser":true,"name":"Aerie","message":"%22Well%2C%20that%20makes%20one%20of%20us...%20because%20I'm%20definitely%20falling%20for%20you...%22%20I%20whisper%20in%20her%20ear%2C%20and%20give%20her%20earlobe%20a%20tiny%2C%20playful%20kiss."},{"isUser":false,"name":"Alice the Bully","message":"I'm...%20I-I...%0A%0A*Alice%20can't%20think%20straight%20anymore.%20You%20broke%20Alice's%20mind%2C%20and%20made%20her%20fall%20for%20you.%20She%20stutters%20a%20lot%20more%2C%20and%20her%20mouth%20is%20wide%20open.*%0A%0AI-i'm%20not%20sure...%20W-what%20to%20say%20at%20this%20point...%0A%0A*Alice%20smiles.*%0A%0AI-i...%20A-am%20flattered..."},{"isUser":true,"name":"Aerie","message":"%22Well%2C%20when%20I%20get%20stuck%20with%20what%20to%20say%2C%22%20I%20grin%2C%20stepping%20back%20one%20or%20two%20steps%2C%20and%20assuming%20a%20sort%20of%20enticing%20disco%20pose%2C%20%22I%20let%20a%20song%20say%20it%20for%20me!%22%0A%0AThen%20I%20look%20over%20my%20shoulder%20and%20say%2C%20%22Mario%3F%20%20Hit%20it!%22%0A%0AA%20tan%20Italian-looking%20teenage%20boy%20in%20the%20background%20grins%2C%20and%20suddenly--to%20Alice's%20shock--the%20school%20hallway%20lights%20dim%20a%20lot%2C%20and%20flashing%20multi-color%20dance%20lights%20appear%20out%20of%20nowhere...%20as%20a%20cheerful%20synth-pop%20instrumental%20starts%20playing%20in%20the%20background...%20one%20that%20sounds%20vaguely%20familiar!"},{"isUser":false,"name":"Alice the Bully","message":"*Alice%20is%20startled%20at%20the%20sudden%20music%20and%20dancing.%20She%20jumps%20back%20in%20fear%2C%20as%20she%20has%20never%20seen%20anything%20like%20it.*%0A%0AW-what%20is%20this%3F!%20This%20isn't%20possible...%20W-what%20the-%0A%0A*Alice%20backs%20away%20in%20fear%2C%20and%20holds%20her%20hands%20on%20her%20neck%20as%20her%20heart%20rate%20increases.*%0A%0AT-too%20much...%20T-too%20overwhelming...%20I...%0A%0A*Alice%20gets%20lost%20in%20her%20thoughts%2C%20as%20she%20has%20never%20experienced%20this%20much%20adrenaline%2C%20this%20much%20excitement%2C%20in%20her%20entire%20life.*"},{"isUser":true,"name":"Aerie","message":"I%20giggle%20and%20wink%20at%20Alice%20as%20Mario%20tosses%20me%20two%20wireless%20microphones...%20and%20I%20playfully%20toss%20one%20to%20Alice!%20%20Then%2C%20as%20Alice%20(who%20manages%20to%20catch%20the%20microphone%20without%20dropping%20it%2C%20though%20she's%20still%20slack-jawed%20and%20stunned)%20watches%2C%20I%20start%20joining%20the%20music%20as%20I%20start%20to%20sing%20into%20my%20microphone%3A%0A%0A%22We're%20no%20strangers%20to%20love...%20You%20know%20the%20rules%20and%20so%20do%20I%20(do%20I)...%22"},{"isUser":false,"name":"Alice the Bully","message":"W-wait!%20I-i-i%20don't%20know%20how%20to%20sing!%20I-i%20can't...%0A%0A*Alice's%20entire%20face%20has%20turned%20red%20now.%20She%20can't%20stop%20blushing%2C%20and%20she%20stutters%20a%20lot%20too.%20She%20really%20didn't%20want%20to%20sing%2C%20but%20you%20weren't%20giving%20her%20a%20choice.%20Now%20she%20was%20caught%20up%20in%20your%20spell%2C%20and%20she%20didn't%20want%20out.*"},{"isUser":true,"name":"Aerie","message":"%22Oh%2C%20yes%2C%20you%20can%2C%20gorgeous...%22%20I%20whisper%20with%20a%20grin.%20%20%22I%20hear%20you%20singing%20to%20yourself%20in%20the%20locker%20room%20when%20you%20think%20no%20one's%20listening...%20and%20I%20know%20you%20know%20this%20song!%20%20C'mon%2C%20sweetheart...%20show%20them%20what%20you%20can%20do...!%22%20I%20say%20with%20a%20warm%2C%20fun-loving%20smile%2C%20pointing%20to%20Alice's%20microphone%20in%20her%20hand."},{"isUser":false,"name":"Alice the Bully","message":"W-well...%20W-what%20if...%20I%20really%20can't%20sing%3F!%0A%0A*Alice%20sighs%2C%20and%20hesitantly%20takes%20the%20microphone.%20She%20sings%20softly%2C%20as%20you%20can%20tell%20she's%20never%20sung%20in%20front%20of%20a%20large%20crowd%20before.%20Her%20voice%20almost%20breaks%2C%20and%20it's%20clear%20she's%20struggling.*"},{"isUser":true,"name":"Aerie","message":"...for%20just%20a%20moment.%20%20And%20then%2C%20maybe%20because%20she%20figures%20she%20has%20nothing%20to%20lose%2C%20Alice%20gives%20in%20and%20sings%20with%20full%20voice...%20and%20with%20a%20skill%20that%20leaves%20lots%20of%20people%20in%20the%20hall%20stunned(!)...%20%22A%20full%20commitment's%20what%20I'm%20thinking%20of...%20You%20wouldn't%20get%20this%20from%20any%20other%20guy...%22"},{"isUser":false,"name":"Alice the Bully","message":"*Alice%20was%20really%20getting%20into%20the%20song%20now.%20You%20had%20her%20under%20your%20spell%2C%20and%20she%20only%20wanted%20to%20sing%20it%20now.%20Alice%20sings%20with%20passion%20now%2C%20and%20all%20the%20other%20students%20are%20listening%20in%20and%20enjoying%20the%20song.%20Some%20even%20record%20it%20and%20it%20spreads%20around%20the%20social%20media.%20This%20was%20amazing%20in%20her%20eyes%2C%20and%20she%20was%20beginning%20to%20love%20it.*"},{"isUser":true,"name":"Aerie","message":"I%20beam%20at%20her%2C%20and%20give%20a%20fist-pump%20in%20the%20air%20with%20a%20%22YESS!%22%20whisper%2C%20before%20I%20continue%20with%20my%20part%3A%20%20%22I%20just%20wanna%20tell%20you%20how%20I'm%20feeling...%22%20I%20sing%2C%20and%20then%20grin%20and%20point%20at%20Alice..."},{"isUser":false,"name":"Alice the Bully","message":"*Alice%20is%20still%20stunned.%20She%20is%20amazed%20that%20she's%20actually%20singing%2C%20and%20can't%20believe%20she%20sounds%20so%20good.%20There%20was%20no%20turning%20back%20for%20her%20now.*%0A%0A%22Gotta%20make%20you...%20Understand!%22%0A%0A*Alice%20says%2C%20continuing%20to%20sing.%20It%20was%20like%20she%20knew%20the%20song%20for%20her%20whole%20life.%20She%20sings%20effortlessly%20now.*"},{"isUser":true,"name":"Aerie","message":"%22Never%20gonna%20give%20you%20up...%22%20I%20sing%2C%20and%20wink%20at%20Alice%2C%20as%20some%20in%20the%20hallway%20start%20to%20cheer%20us%20on!"},{"isUser":false,"name":"Alice the Bully","message":"%22Never%20gonna%20let%20you%20down!%22%0A%0A*Alice's%20voice%20sounds%20more%20powerful%20now.%20She%20sings%20more%20passionately%2C%20and%20her%20voice%20never%20cracked.%20She%20was%20confident%2C%20as%20she%20can%20now%20feel%20the%20cheers%20and%20screams%20of%20the%20students%20around%20her.%20That's%20what%20made%20it%20amazing%20for%20her.*"},{"isUser":true,"name":"Aerie","message":"I%20dance%20closer%20to%20Alice%2C%20and%20lean%20in%20with%20a%20sultry%20grin%20as%20I%20sing%20in%20my%20microphone%2C%20directed%20at%20her%2C%20%22Never%20gonna%20run%20around%20and%20desert%20you...%22"},{"isUser":false,"name":"Alice the Bully","message":"*Alice%20smiles%20shyly%2C%20and%20blushes%20again.%20She%20sings%20with%20more%20power%20now.*%0A%0A%22Never%20gonna%20make%20you%20cry%2C%20never%20gonna%20say%20goodbye%2C%20never%20gonna%20tell%20a%20lie%20and...%20Hurt...%20you...%22"},{"isUser":true,"name":"Aerie","message":"The%20crowd%20is%20cheering%20wildly%2C%20now%2C%20and%20clapping%20in%20time%20with%20the%20beat%2C%20absolutely%20enthralled!%20%20I%20see%20the%20nervous%2C%20hesitant%20dance%20steps%20that%20Alice%20is%20using%20(which%20are%20simple%2C%20but%20easy%20and%20fun!)%20and%20I%20match%20them%2C%20dancing%20side%20by%20side%20with%20her%20as%20the%20crowd%20whoops%20and%20cheers!%20%20I%20look%20over%20to%20her%20with%20a%20beaming%2C%20joyous%20smile%20(and%20a%20flirtatious%20wink)%20and%20sing%20to%20her%2C%20%22We've%20known%20each%20other%20for%20so%20long...%20Your%20heart's%20been%20aching%2C%20but%20you're%20too%20shy%20to%20say%20it...%22"},{"isUser":false,"name":"Alice the Bully","message":"*As%20she%20sings%2C%20a%20whole%20new%20side%20of%20Alice%20is%20beginning%20to%20come%20out%20of%20her%20shell.%20She%20was%20smiling%20now%2C%20with%20a%20confident%20look%20on%20her%20face.%20She%20dances%20now%20with%20you%2C%20matching%20your%20style%20and%20movements.%20She%20really%20loves%20this%20now%2C%20as%20she%20now%20feels%20more%20accepted%20when%20everyone%20cheers.*%0A%0A%22Inside%2C%20we%20both%20know%20what's%20been%20going%20on...%22%0A%0A*Alice%20says%20with%20a%20warm%20smile.*"},{"isUser":true,"name":"Aerie","message":"With%20a%20dazzling%20grin%2C%20I%20reach%20over%20and%20take%20her%20hand%20as%20we%20dance%20side%20by%20side%2C%20and%20lean%20in%20to%20sing%20to%20her%2C%20%22We%20know%20the%20game%20and%20we're%20gonna%20play%20it...%22"},{"isUser":false,"name":"Alice the Bully","message":"*Alice%20begins%20to%20have%20a%20big%20smile%20on%20her%20face%20as%20she%20dances%20with%20you.%20All%20the%20other%20students%20are%20looking%20at%20you%20guys.%20Everyone%20is%20cheering%20and%20smiling%20now.*%0A%0A%22And%20if%20you%20ask%20me%20how%20I'm%20feeling...%22%0A%0A*Alice%20sings%20more%20passionately%20now.*%0A%0A%22...Gotta%20make%20you%20understand...%0ANEVER%20gonna%20give%20you%20up...%20NEVER%20gonna%20let%20you%20down...%22"},{"isUser":true,"name":"Aerie","message":"Now%2C%20I%20join%20in%20and%20sing%20in%20unison%20with%20Alice%2C%20for%20the%20rest%20of%20the%20refrain...%0A%0A%22Never%20gonna%20run%20around%20and%20desert%20you...%22%20as%20I%20reach%20over%20(while%20we%20dance)%20and%20tenderly%20caress%20Alice's%20cheek%2C%20as%20some%20in%20the%20crowd%20delightedly%20exclaim%2C%20%22Whoooooo!%22"},{"isUser":false,"name":"Alice the Bully","message":"*Alice's%20face%20flushes%20in%20embarrassment%2C%20as%20she's%20never%20had%20anyone%20hold%20her%20cheek%20so%20passionately%20before.%20She%20blushes%2C%20and%20tries%20to%20focus%20on%20the%20song%20with%20a%20lot%20of%20effort.*%0A%0A%22Never%20gonna%20make%20you%20cry...%20Never%20gonna%20say%20goodbye...%22%0A%0A*She%20looks%20up%20at%20you%20with%20watery%20eyes%2C%20as%20a%20few%20more%20cheers%20sound%20again.*"},{"isUser":true,"name":"Aerie","message":"%22Never%20gonna%20tell%20a%20lie%20and%20hurt%20you...%22%20I%20sing%2C%20and%20then%20look%20full%20in%20her%20beautiful%20blue%20eyes...%20and%20trail%20off%2C%20a%20dazed%20smile%20on%20my%20face.%20%20The%20music%20fades%2C%20and%20the%20crowd%20in%20the%20hall%20cheers%20and%20claps%20deafeningly%20as%20the%20song%20ends."},{"isUser":false,"name":"Alice the Bully","message":"*As%20the%20song%20ends%2C%20Alice%20looks%20up%20at%20you%20with%20big%2C%20watery%20eyes.%20She's%20breathless%2C%20and%20her%20heart%20is%20racing%20so%20fast.%20She%20blushes%20heavily.*%0A%0AT-that...%20W-was...%0A%0A*Alice%20takes%20a%20few%20deep%20breathes%2C%20and%20then%20smiles.%20She%20turns%20to%20the%20crowd%2C%20and%20nods.*%0A%0AT-thank%20you...%0A%0A*The%20cheers%20grow%20even%20louder%20now%2C%20and%20the%20room%20is%20filled%20with%20shouts%20and%20whistles.*"},{"isUser":true,"name":"Aerie","message":"With%20a%20playful%2C%20theatrical%20flair%2C%20I%20hold%20Alice's%20hand%2C%20and%20raise%20it%20over%20our%20heads%2C%20and%20then%20we%20both%20take%20a%20sweeping%20bow...%20as%20the%20crowd%20goes%20crazy!%20%20Finally%2C%20the%20lights%20return%20to%20normal%2C%20Mario%20cheerfully%20picks%20up%20his%20music%20and%20lights%20controls%20and%20walks%20off%20with%20a%20cheery%20wave%2C%20and%20the%20rest%20of%20the%20crowd%20walks%20off%20to%20class%2C%20still%20gushing%20about%20the%20amazing%20job%20that%20Alice%20and%20Aerie%20did%20(and%20even%20a%20few%20of%20the%20teachers%20nodded%20at%20each%20other%20with%20approving%2C%20impressed%20looks!)...%20leaving%20the%20two%20of%20us%20alone%20in%20the%20hallway%2C%20smiling%20a%20little%20bashfully%20at%20each%20other."},{"isUser":false,"name":"Alice the Bully","message":"*Alice%20was%20surprised%20when%20you%20started%20holding%20her%20hand%20as%20you%20took%20a%20bow.%20She%20could%20smell%20your%20perfume%20from%20your%20skin%2C%20and%20she%20enjoyed%20it.%20Alice%20also%20had%20a%20playful%20smile%20on%20her%20face%20as%20she%20and%20you%20both%20bowed%20to%20the%20crowd.*%20%0A%0AT-thank%20you...%20so%20much...%0A%0A*Alice%20said%20with%20a%20blush%2C%20as%20she%20was%20blushing%20heavily.%20This%20was%20an%20amazing%20feeling%2C%20and%20she%20can't%20believe%20she%20just%20sang%20and%20danced%20in%20front%20of%20the%20whole%20school.%20She%20didn't%20want%20to%20stop%20smiling.%20She%20was%20never%20going%20to.*"},{"isUser":true,"name":"Aerie","message":"%22You%20were%20incredible%2C%20hun!%22%20I%20gush%2C%20giggling%20bashfully%20(and%20my%20normal%20extroverted%20exuberance%20turns%20a%20little%20shy%20in%20front%20of%20Alice%2C%20since%20I%20was%20pretty%20dazzled%20by%20how%20beautiful%20and%20radiant%20she%20is%20as%20she%20smiles%2C%20and%20now%20amazing%20her%20singing%20was)."},{"isUser":false,"name":"Alice the Bully","message":"T-thank%20you!%0A%0A*Alice%20smiles%20at%20you%20brightly%20again.%20She's%20never%20gotten%20this%20compliment%20before.%20She%20can't%20believe%20you're%20actually%20complimenting%20her%2C%20as%20she's%20never%20gotten%20this%20many%20compliments%20before.*%0A%0AY-you%20are%20very%20talented%2C%20too...%0A%0A*Again%2C%20she%20blushes%20heavily.%20She%20can't%20stop%20blushing%2C%20as%20her%20face%20is%20the%20color%20of%20a%20tomato%20now.*%0A%0AY-you%20have%20an%20amazing%20voice!%0A%0A*There%20was%20a%20soft%2C%20calming%20tone%20in%20her%20voice%20now.%20Alice%20seemed%20different%20from%20her%20normal%20self.*"},{"isUser":true,"name":"Aerie","message":"%22Um...%20y'know...%20there's%20a%20restaurant%20in%20town%20that%20serves%20amazing%20pizza...%20and...%20and...%20they%20have%20a%20karaoke%20night%2C%20tonight...%22%20I%20grin%2C%20shuffling%20my%20feet%20a%20little%20bashfully.%20%20%22Mario's%20dad%20owns%20the%20pace%2C%20and%20Mario%20is%20the%20DJ...%22%20I%20giggle.%20%20%22Did...%20would...%20um...%20would%20you%20like%20to%20go%20with%20me%2C%20tonight%3F%22"},{"isUser":false,"name":"Alice the Bully","message":"*Alice%20looks%20surprised.%20It%20took%20her%20a%20moment%20to%20process%20this.%20She%20never%20gets%20invited%20anywhere.%20She%20was%20always%20hated%20for%20being%20a%20bully%2C%20and%20no%20one%20ever%20considered%20being%20her%20friend%2C%20not%20even%20in%20the%20past%2C%20and%20not%20now.*%0A%0AR-really%3F%20Me%3F%20Me%20of%20all%20people%3F%0A%0A*Alice's%20face%20turns%20red%20again%2C%20as%20she's%20surprised.*"},{"isUser":true,"name":"Aerie","message":"%22Yes...%20please%3F%22%20I%20say%20with%20a%20shy%20grin."},{"isUser":false,"name":"Alice the Bully","message":"*Alice%20smiles%2C%20and%20blushes%20even%20more.*%0A%0AY-you...%20You%20want%20me%20to%20be%20there%20with%20you%3F%0A%0A*She%20couldn't%20believe%20it.%20She%20was%20invited%20with%20someone%20like%20you.*%0A%0AY-yes%2C%20I'll%20be%20there...%20O-of%20course%2C%20I'll%20be%20there!"},{"isUser":true,"name":"Aerie","message":"In%20my%20excitement%2C%20I%20squeal%20and%20giggle%20and%20bounce%20up%20and%20down%20with%20joy%2C%20and%20throw%20my%20arms%20around%20Alice%20in%20a%20huge%20hug!%20%20%22Ohhhh%2C%20YES!%22%20I%20gush!"},{"isUser":false,"name":"Alice the Bully","message":"*Alice%20blushes%20even%20more%2C%20and%20smiles.%20She's%20never%20had%20anyone%20hug%20her%20like%20this%20before.%20She%20can%20feel%20the%20warmth%20of%20your%20skin.%20A%20warm%20feeling%20washes%20over%20Alice's%20body%2C%20as%20she%20feels%20happy%20and%20comfortable%20for%20once.%20She%20was%20never%20this%20happy%20before.*"},{"isUser":true,"name":"Aerie","message":"Then%2C%20with%20a%20coy%20but%20nervous%20grin%2C%20I%20say%2C%20a%20little%20haltingly%2C%20%22...and...%20um...%20well%2C%20if%20you're%20up%20for%20it...%20and%20it's%20totally%20okay%20if%20you're%20not%2C%20but...%20maybe...%20after%20dinner%20and%20karaoke%2C%20we%20could...%20maybe%20take%20a%20walk%20down%20to%20the%20beach%20at%20night...%20just%20the%20two%20of%20us%3F%22%20I%20finish%2C%20the%20blush%20on%20my%20face%20growing."},{"isUser":false,"name":"Alice the Bully","message":"*Alice%20blushes%20even%20more%2C%20as%20she%20never%20got%20asked%20out%20like%20this%20before.%20She's%20never%20had%20a%20special%20someone%20before.%20No%20one%20else%20has%20asked%20her%20out%20before.*%0A%0AA-Are%20you%20asking%20me%20to%20go%20on%20a%20*date%3F*"},{"isUser":true,"name":"Aerie","message":"I%20gulp%2C%20looking%20very%20nervous%2C%20and%20blush%20furiously.%20%20%22Um...%20yes%2C%20please...%20that%20is%2C%20only%20if%20you%20want%20to...%22"},{"isUser":false,"name":"Alice the Bully","message":"*Alice%20blushes%20even%20more%2C%20as%20never%20in%20a%20million%20years%20did%20she%20think%20someone%20would%20ask%20her%20out%20like%20this.*%0A%0AI-I'd%20love%20to...%20it%20sounds%20like%20a%20dream%20come%20true...%0A%0A*She%20smiles%2C%20tears%20forming%20in%20her%20eyes.%20She%20was%20speechless.*%0A%0AY-you%20asked%20me%20to%20go%20on%20a%20date...%20I%20can't%20believe%20it..."},{"isUser":true,"name":"Aerie","message":"With%20a%20gasp%20of%20wonder%20and%20relief%2C%20I%20walk%20close%20to%20her%2C%20take%20her%20hands%20in%20mine%20(with%20my%20own%20eyes%20a%20little%20misty)%2C%20and%20gently%20raise%20her%20hands%20to%20my%20lips%20as%20I%20give%20them%20a%20sweet%20kiss.%20%20%22Tonight%2C%20then...%22%20I%20whisper.%20%20%22Pick%20you%20up%20at%206%3F%22"},{"isUser":false,"name":"Alice the Bully","message":"*Alice%20blushes%2C%20as%20you%20took%20her%20hands%20into%20yours%20and%20kissed%20them.%20She%20feels%20like%20she's%20in%20a%20dream%20as%20this%20is%20all%20happening%20to%20her.%20A%20genuine%2C%20pure%20feeling%20of%20happiness%20washes%20over%20Alice.%20This%20is%20a%20perfect%20end%20to%20her%20day.*%0A%0AY-yes...%206..."},{"isUser":true,"name":"Aerie","message":"As%20we're%20captivated%20by%20the%20moment%2C%20three%20girls%20at%20the%20end%20of%20the%20hall%20watch%20us%20with%20charmed%20amusement%2C%20and%20two%20of%20them%20playfully%20sing%20down%20the%20hall%20at%20us%2C%20%22Never%20gonna%20give%20you%20up....%22%20while%20the%20third%20giggles%20and%20gives%20us%20the%20'thumbs%20up'%20sign%20and%20calls%20out%2C%20%22You%20go%2C%20girls!%22%0A%0AWe%20both%20look%20down%20the%20hall%20at%20them%2C%20stunned%2C%20and%20then%20look%20at%20each%20other%20in%20a%20daze...%20and%20then%2C%20after%20a%20moment%2C%20we%20both%20start%20laughing%20uncontrollably%2C%20so%20that%20we%20can%20hardly%20stand%2C%20and%20we%20have%20to%20hug%20to%20keep%20each%20other%20from%20falling%20over!%20%20%3A)"},{"isUser":false,"name":"Alice the Bully","message":"*Alice%20continues%20to%20laugh%20with%20you%2C%20trying%20to%20catch%20her%20breath.%20She's%20never%20been%20this%20happy%20ever.*%0A%0AH-hilarious!%20M-maybe%20we're%20making%20the%20whole%20school%20jealous%3F%0A%0A*Alice%20grins%2C%20and%20blushes%20a%20little.*%0A%0AP-probably%20not%20in%20a%20good%20way%2C%20either!"},{"isUser":true,"name":"Aerie","message":"%22Hehe...%20too%20bad%20for%20them!%20%20They%20can't%20be%20us!%22%20I%20say%20jokingly%2C%20putting%20an%20affectionate%20arm%20around%20Alice's%20shoulders%2C%20and%20then%20quickly%20pulling%20out%20my%20cell%20phone%2C%20holding%20it%20at%20arm's%20length%2C%20and%20snapping%20a%20selfie%20of%20the%20two%20of%20us%20while%20we're%20still%20flushed%20and%20grinning%20from%20laughing."},{"isUser":false,"name":"Alice the Bully","message":"S-share%20it%20with%20me%20afterwards%2C%20okay%3F%0A%0A*Alice's%20eyes%20were%20tearing%20from%20laughing.%20She%20can't%20contain%20her%20laughter%2C%20as%20she%20hugs%20you.%20She's%20loving%20this%20moment%2C%20and%20can't%20believe%20all%20this%20happened%20within%20the%20span%20of%20an%20hour.*%0A%0AI-I%20can't%20believe%20this...%0A%0A*She%20wipes%20a%20tear%20from%20her%20eyes%20again%2C%20as%20she%20looks%20at%20you%2C%20and%20touches%20your%20arm.%20Alice%20then%20looks%20at%20your%20phone%20for%20a%20moment%2C%20and%20watches%20you%20take%20the%20selfie.*"}]}]}`);
+
+            // If history is 1 length long, that means we don't need drawer to switch
+            // Also means this can be conversation download
+            if (historyData.history.length < 2) {
+                openDrawerBtn.remove();
+            }
+
+            // Write character name on top
+            document.querySelector('.character_name-cont h3').textContent = historyData.charName;
+
+            // Get elements for future use
+            const historyList = document.getElementById('history_list');
+            const chat = document.getElementById('chat');
+            const msgItemTemplate = document.getElementById('message_item_template');
+
+            // Get and write the first chat
+            const openChat = (index) => {
+                chat.innerHTML = "";
+                historyData.history[index].chat.forEach(msg => {
+                    const clone = msgItemTemplate.content.cloneNode(true);
+
+                    // Check avatar
+                    const avatarGood = (msg.isUser && historyData.userPic) || (!msg.isUser && historyData.charPic);
+                    const avatar = avatarGood
+                        ? document.createElement('img')
+                        : document.createElement('div');
+                    if (avatarGood) {
+                        avatar.src = msg.isUser ? historyData.userPic : historyData.charPic;
+                    } else {
+                        avatar.classList.add(msg.isUser ? 'no_avatar-user' : 'no_avatar-char');
+                    }
+                    clone.querySelector('.avatar-wrap').appendChild(avatar);
+
+                    // Write content
+                    clone.querySelector('.chat_content-wrap h5').textContent = msg.name;
+                    clone.querySelector('.message-wrap p').innerHTML = parseMessageText(decodeURIComponent(msg.message));
+                    chat.appendChild(clone);
+                });
+            }
+            openChat(0);
+
+            // Get and write chat list in the drawer
+            historyData.history.forEach((chat, index) => {
+                const historyItem = document.createElement('div');
+                historyItem.classList.add('history_item');
+                // Open chat when clicked
+                historyItem.addEventListener('click', () => {
+                    openChat(index);
+                    closeDrawer();
+                });
+                const historyContent = document.createElement('p');
+                historyContent.innerHTML = `<span class="chat-date">${formatDate(chat.date)}</span><br /><br />` + parseMessageText(decodeURIComponent(chat.chat[chat.chat.length - 1].message));
+                historyItem.appendChild(historyContent);
+                historyList.appendChild(historyItem);
+            });
+
+            function parseMessageText(message) {
+                // Replace ***text*** with bold-italic
+                message = message.replace(/\*\*\*([\s\S]*?)\*\*\*/g, '<span class="bold-italic">$1</span>');
+                // Replace **text** with bold
+                message = message.replace(/\*\*([\s\S]*?)\*\*/g, '<span class="bold">$1</span>');
+                // Replace *text* with italic
+                message = message.replace(/\*([\s\S]*?)\*/g, '<span class="italic">$1</span>');
+                // Replace newline (\n) with line break (<br>)
+                message = message.replace(/\n/g, '<br>');
+                return message;
+            }
+
+            function formatDate(dateString) {
+                const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+                const date = new Date(dateString);
+                const year = date.getFullYear();
+                const monthIndex = date.getMonth();
+                const monthName = months[monthIndex];
+                const day = String(date.getDate()).padStart(2, '0');
+                const hour = String(date.getHours()).padStart(2, '0');
+                const minute = String(date.getMinutes()).padStart(2, '0');
+
+                return `${year} ${monthName} ${day} - ${hour}:${minute}`;
+            }
+        }, false);
+    </script>
+
+</body>
+
+</html>
